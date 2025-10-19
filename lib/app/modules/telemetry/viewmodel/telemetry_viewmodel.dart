@@ -364,6 +364,40 @@ class TelemetryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Gera um nome automático para a sessão seguindo o padrão "rotaX"
+  Future<String> _generateSessionName() async {
+    final sessions = await _databaseService.getAllSessions();
+    final existingNames = sessions.map((s) => s['name'] as String).toList();
+    
+    for (int i = 1; i <= 999; i++) {
+      final name = 'rota$i';
+      if (!existingNames.contains(name)) {
+        return name;
+      }
+    }
+    
+    // Fallback se todos os números de 1-999 estiverem ocupados
+    return 'rota${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  /// Inicia uma nova sessão automaticamente com nome gerado
+  Future<void> startSessionAutomatically() async {
+    if (_isRecording) {
+      dev.log("🔴 TELEMETRY_VIEWMODEL: Tentativa de iniciar nova sessão enquanto já está gravando 🔴");
+      return;
+    }
+
+    try {
+      final sessionName = await _generateSessionName();
+      dev.log("🟡 TELEMETRY_VIEWMODEL: Iniciando sessão automática: '$sessionName' 🟡");
+      await startNewSession(sessionName);
+    } catch (e) {
+      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao iniciar sessão automática: $e 🔴");
+      _errorMessage = 'Erro ao iniciar sessão: $e';
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     dev.log("🟡 TELEMETRY_VIEWMODEL: Fazendo dispose do TelemetryViewModel 🟡");

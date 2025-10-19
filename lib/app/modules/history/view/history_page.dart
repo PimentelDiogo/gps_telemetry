@@ -110,15 +110,6 @@ class HistoryPage extends StatelessWidget {
             );
           },
         ),
-        floatingActionButton: Consumer<HistoryViewModel>(
-          builder: (context, viewModel, child) {
-            return FloatingActionButton(
-              onPressed: viewModel.navigateToNewSession,
-              tooltip: 'Nova Sessão',
-              child: const Icon(Icons.add),
-            );
-          },
-        ),
       ),
     );
   }

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gps_telemetry/app/modules/telemetry/viewmodel/telemetry_viewmodel.dart';
+import '../../../shared/widgets/action_card.dart';
+import '../../../shared/services/location_service.dart';
 
 class TelemetryPage extends StatelessWidget {
   final int? sessionId;
@@ -93,6 +95,29 @@ class TelemetryPage extends StatelessWidget {
                         
                         // Estatísticas da sessão
                         _StatisticsCard(viewModel: viewModel),
+                        const SizedBox(height: 16),
+                        
+                        // Action Card para navegar ao histórico
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ActionCard(
+                                icon: Icons.history,
+                                title: 'Histórico',
+                                color: Colors.orange,
+                                onTap: () {
+                                  print('🔵 NAVEGAÇÃO: Tentando navegar para /history');
+                                  try {
+                                    Modular.to.pushNamed('/history');
+                                    print('🟢 NAVEGAÇÃO: pushNamed executado com sucesso');
+                                  } catch (e) {
+                                    print('🔴 NAVEGAÇÃO: Erro ao navegar - $e');
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -111,7 +136,7 @@ class TelemetryPage extends StatelessWidget {
               );
             } else {
               return FloatingActionButton(
-                onPressed: () => _showStartSessionDialog(context, viewModel),
+                onPressed: viewModel.startSessionAutomatically,
                 child: const Icon(Icons.play_arrow),
               );
             }
@@ -415,6 +440,7 @@ class _MapSection extends StatefulWidget {
 class _MapSectionState extends State<_MapSection> {
   GoogleMapController? _mapController;
   LatLng? _initialPosition;
+  bool _isLoadingLocation = true;
 
   @override
   void initState() {
@@ -422,13 +448,41 @@ class _MapSectionState extends State<_MapSection> {
     _setInitialPosition();
   }
 
-  void _setInitialPosition() {
-    final position = widget.viewModel.currentPosition;
-    if (position != null) {
-      _initialPosition = LatLng(position.latitude, position.longitude);
-    } else {
-      // Posição padrão (São Paulo)
-      _initialPosition = const LatLng(-23.5505, -46.6333);
+  void _setInitialPosition() async {
+    try {
+      // Obter localização atual do dispositivo
+      final locationService = Modular.get<LocationService>();
+      final position = await locationService.getCurrentPosition();
+      
+      if (position != null && mounted) {
+        setState(() {
+          _initialPosition = LatLng(position.latitude, position.longitude);
+          _isLoadingLocation = false;
+        });
+        
+        // Se o mapa já foi criado, mover a câmera para a posição atual
+        if (_mapController != null) {
+          _mapController!.animateCamera(
+            CameraUpdate.newLatLng(_initialPosition!),
+          );
+        }
+      } else {
+        // Fallback para posição padrão (São Paulo) se não conseguir obter localização
+        if (mounted) {
+          setState(() {
+            _initialPosition = const LatLng(-23.5505, -46.6333);
+            _isLoadingLocation = false;
+          });
+        }
+      }
+    } catch (e) {
+      // Em caso de erro, usar posição padrão
+      if (mounted) {
+        setState(() {
+          _initialPosition = const LatLng(-23.5505, -46.6333);
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
@@ -453,7 +507,12 @@ class _MapSectionState extends State<_MapSection> {
         borderRadius: BorderRadius.circular(8),
         child: Stack(
           children: [
-            GoogleMap(
+            if (_isLoadingLocation)
+              const Center(
+                child: CircularProgressIndicator(),
+              )
+            else
+              GoogleMap(
               onMapCreated: (GoogleMapController controller) {
                 _mapController = controller;
                 // Delay para evitar operações simultâneas que podem causar buffer overflow
@@ -469,12 +528,20 @@ class _MapSectionState extends State<_MapSection> {
               ),
               markers: widget.viewModel.markers,
               polylines: widget.viewModel.polylines,
-              myLocationEnabled: true,
+              myLocationEnabled: false,
               myLocationButtonEnabled: false,
               mapType: MapType.normal,
               zoomControlsEnabled: true,
-              compassEnabled: true,
+              compassEnabled: false,
+              buildingsEnabled: false,
+              indoorViewEnabled: false,
               trafficEnabled: false,
+              rotateGesturesEnabled: false,
+              scrollGesturesEnabled: true,
+              tiltGesturesEnabled: false,
+              zoomGesturesEnabled: true,
+              mapToolbarEnabled: false,
+              minMaxZoomPreference: const MinMaxZoomPreference(10.0, 20.0),
             ),
             
             // Botão para centralizar na localização atual

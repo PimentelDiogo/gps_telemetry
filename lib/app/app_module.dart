@@ -1,5 +1,4 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:gps_telemetry/app/modules/home/home_module.dart';
 import 'package:gps_telemetry/app/modules/telemetry/telemetry_module.dart';
 import 'package:gps_telemetry/app/modules/history/history_module.dart';
 import 'package:gps_telemetry/app/modules/session_details/session_details_module.dart';
@@ -26,11 +25,8 @@ class AppModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    // Rota inicial
-    r.module('/', module: HomeModule());
-    
-    // Módulo de telemetria
-    r.module('/telemetry', module: TelemetryModule());
+    // Rota inicial - agora é a telemetria
+    r.module('/', module: TelemetryModule());
     
     // Módulo de histórico
     r.module('/history', module: HistoryModule());

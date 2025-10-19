@@ -10,10 +10,10 @@ class TelemetryModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child('/', child: (context) => const TelemetryPage());
-    r.child('/:sessionId', child: (context) {
-      final sessionId = int.tryParse(r.args.params['sessionId'] ?? '0') ?? 0;
-      return TelemetryPage(sessionId: sessionId);
+    print('🟡 TELEMETRY_MODULE: Configurando rotas do TelemetryModule');
+    r.child('/', child: (context) {
+      print('🟢 TELEMETRY_MODULE: Criando TelemetryPage');
+      return const TelemetryPage();
     });
   }
 }

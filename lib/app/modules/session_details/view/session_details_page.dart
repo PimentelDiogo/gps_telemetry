@@ -406,20 +406,6 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
   Widget _buildActionButtons() {
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: _viewModel.viewOnMap,
-            icon: const Icon(Icons.map),
-            label: const Text('Visualizar no Mapa'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
