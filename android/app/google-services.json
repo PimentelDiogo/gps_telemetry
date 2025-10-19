@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "965121946199",
+    "project_id": "gpstelemetry-aec9f",
+    "storage_bucket": "gpstelemetry-aec9f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:965121946199:android:ceb3919d8619dbc3836912",
+        "android_client_info": {
+          "package_name": "com.example.gps_telemetry"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBESvhOjOWJviZ65F5mfaicZBNLMMh4ZV0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

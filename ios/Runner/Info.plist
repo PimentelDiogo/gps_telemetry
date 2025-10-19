@@ -45,5 +45,21 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Permissões para localização -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Este app precisa acessar sua localização para registrar dados de telemetria GPS.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Este app precisa acessar sua localização continuamente para registrar dados de telemetria GPS em segundo plano.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Este app precisa acessar sua localização continuamente para registrar dados de telemetria GPS.</string>
+	
+	<!-- Permissões para sensores de movimento -->
+	<key>NSMotionUsageDescription</key>
+	<string>Este app precisa acessar os sensores de movimento para registrar dados de aceleração e orientação.</string>
+	
+	<!-- Google Maps API Key - iOS -->
+	<key>GMSApiKey</key>
+	<string>AIzaSyCaWye_bpTFDkChFGkaN3CsdllfOFZLRWw</string>
 </dict>
 </plist>
