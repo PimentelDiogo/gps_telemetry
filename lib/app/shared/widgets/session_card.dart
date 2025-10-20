@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Widget reutilizável para exibir informações de sessões de telemetria
-/// 
-/// Características:
-/// - Exibe status da sessão (ativa/histórico)
-/// - Mostra informações formatadas (duração, distância, velocidade)
-/// - Menu de ações (visualizar/excluir)
-/// - Callback para ações customizáveis
 class SessionCard extends StatelessWidget {
   final Map<String, dynamic> session;
   final String Function(Map<String, dynamic>) formatDuration;

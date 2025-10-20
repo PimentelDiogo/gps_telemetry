@@ -19,18 +19,15 @@ class TelemetrySession {
     required this.createdAt,
   });
 
-  /// Calcula a duração da sessão
   Duration get duration {
     if (endTime == null) return Duration.zero;
     return endTime!.difference(startTime);
   }
 
-  /// Formata a data de início para exibição
   String get formattedStartDate {
     return '${startTime.day.toString().padLeft(2, '0')}/${startTime.month.toString().padLeft(2, '0')}/${startTime.year} ${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
   }
 
-  /// Formata a duração para exibição
   String get formattedDuration {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
@@ -45,7 +42,6 @@ class TelemetrySession {
     }
   }
 
-  /// Formata a distância para exibição
   String get formattedDistance {
     if (totalDistance < 1000) {
       return '${totalDistance.toStringAsFixed(0)} m';
@@ -54,12 +50,10 @@ class TelemetrySession {
     }
   }
 
-  /// Formata a velocidade máxima para exibição
   String get formattedMaxSpeed {
     return '${maxSpeed.toStringAsFixed(1)} km/h';
   }
 
-  /// Formata a velocidade média para exibição
   String get formattedAvgSpeed {
     return '${avgSpeed.toStringAsFixed(1)} km/h';
   }

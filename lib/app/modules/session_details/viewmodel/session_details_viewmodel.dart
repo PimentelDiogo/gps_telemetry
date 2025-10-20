@@ -19,20 +19,17 @@ class SessionDetailsViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Getters
   TelemetrySession? get session => _session;
   List<TelemetryData> get telemetryPoints => _telemetryPoints;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // Estatísticas calculadas
   double get totalDistance => _session?.totalDistance ?? 0.0;
   double get maxSpeed => _session?.maxSpeed ?? 0.0;
   double get avgSpeed => _session?.avgSpeed ?? 0.0;
   Duration get duration => _session?.duration ?? Duration.zero;
   int get totalPoints => _telemetryPoints.length;
 
-  // Métodos de formatação
   String get formattedDistance {
     if (totalDistance < 1000) {
       return '${totalDistance.toStringAsFixed(0)} m';
@@ -70,13 +67,11 @@ class SessionDetailsViewModel extends ChangeNotifier {
            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
   }
 
-  // Carregar detalhes da sessão
   Future<void> loadSessionDetails(int sessionId) async {
     _setLoading(true);
     _clearError();
 
     try {
-      // Carregar dados da sessão
       _session = await _telemetryRepository.getSession(sessionId);
       
       if (_session == null) {
@@ -84,7 +79,6 @@ class SessionDetailsViewModel extends ChangeNotifier {
         return;
       }
 
-      // Carregar pontos de telemetria da sessão
       _telemetryPoints = await _telemetryRepository.getSessionPoints(sessionId);
       
     } catch (e) {
@@ -94,7 +88,6 @@ class SessionDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  // Excluir sessão
   Future<void> deleteSession() async {
     if (_session == null) return;
 
@@ -106,7 +99,6 @@ class SessionDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  // Exportar dados da sessão
   Future<void> exportSession() async {
     if (_session == null || _telemetryPoints.isEmpty) {
       _setError('Nenhum dado disponível para exportação');
@@ -117,7 +109,6 @@ class SessionDetailsViewModel extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      // Mostrar opções de formato
       await _showExportFormatDialog();
     } catch (e) {
       _setError('Erro ao exportar dados: $e');
@@ -126,20 +117,14 @@ class SessionDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  // Mostrar diálogo de seleção de formato
   Future<void> _showExportFormatDialog() async {
-    // Esta função será chamada pela UI para mostrar as opções
-    // Por enquanto, vamos exportar em ambos os formatos
     await _exportToCSV();
     await _exportToJSON();
   }
 
-  // Exportar para CSV
   Future<void> _exportToCSV() async {
     try {
-      // Preparar dados para CSV
       List<List<dynamic>> csvData = [
-        // Cabeçalho
         [
           'Timestamp',
           'Data/Hora',
@@ -154,7 +139,6 @@ class SessionDetailsViewModel extends ChangeNotifier {
         ]
       ];
 
-      // Adicionar dados dos pontos
       for (var point in _telemetryPoints) {
         csvData.add([
           point.timestamp.millisecondsSinceEpoch,
@@ -170,16 +154,13 @@ class SessionDetailsViewModel extends ChangeNotifier {
         ]);
       }
 
-      // Converter para CSV
       String csvString = const ListToCsvConverter().convert(csvData);
 
-      // Salvar arquivo
       final directory = await getApplicationDocumentsDirectory();
       final fileName = '${_session!.name}_${DateTime.now().millisecondsSinceEpoch}.csv';
       final file = File('${directory.path}/$fileName');
       await file.writeAsString(csvString);
 
-      // Compartilhar arquivo
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Dados da sessão ${_session!.name} em formato CSV',
@@ -189,10 +170,8 @@ class SessionDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  // Exportar para JSON
   Future<void> _exportToJSON() async {
     try {
-      // Preparar dados para JSON
       Map<String, dynamic> jsonData = {
         'session': {
           'id': _session!.id,
@@ -232,16 +211,13 @@ class SessionDetailsViewModel extends ChangeNotifier {
         }
       };
 
-      // Converter para JSON
       String jsonString = const JsonEncoder.withIndent('  ').convert(jsonData);
 
-      // Salvar arquivo
       final directory = await getApplicationDocumentsDirectory();
       final fileName = '${_session!.name}_${DateTime.now().millisecondsSinceEpoch}.json';
       final file = File('${directory.path}/$fileName');
       await file.writeAsString(jsonString);
 
-      // Compartilhar arquivo
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Dados da sessão ${_session!.name} em formato JSON',
@@ -251,15 +227,12 @@ class SessionDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  // Visualizar no mapa
   void viewOnMap() {
     if (_session == null) return;
     
-    // Navegar para a home page onde o mapa está integrado
     Modular.to.pushNamedAndRemoveUntil('/', (route) => false);
   }
 
-  // Métodos privados
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();

@@ -79,11 +79,9 @@ class LocationService {
           _positionController?.add(position);
         },
         onError: (error) {
-          // Handle error silently
         },
       );
     } catch (e) {
-      // Handle error silently
     }
   }
 
@@ -99,7 +97,6 @@ class LocationService {
   }
 
   double calculateSpeed(Position position) {
-    // Velocidade em m/s convertida para km/h
     return position.speed * 3.6;
   }
 

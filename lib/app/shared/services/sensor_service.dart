@@ -9,13 +9,11 @@ class SensorService {
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
   StreamSubscription<CompassEvent>? _compassSubscription;
 
-  // Stream para dados do acelerômetro
   Stream<AccelerometerEvent> get accelerometerStream {
     _accelerometerController ??= StreamController<AccelerometerEvent>.broadcast();
     return _accelerometerController!.stream;
   }
 
-  // Stream para dados da bússola
   Stream<double> get compassStream {
     _compassController ??= StreamController<double>.broadcast();
     return _compassController!.stream;
@@ -26,9 +24,7 @@ class SensorService {
       (AccelerometerEvent event) {
         _accelerometerController?.add(event);
       },
-      onError: (error) {
-        print('Erro no acelerômetro: $error');
-      },
+      onError: (error) {},
     );
   }
 
@@ -39,9 +35,7 @@ class SensorService {
           _compassController?.add(event.heading!);
         }
       },
-      onError: (error) {
-        print('Erro na bússola: $error');
-      },
+      onError: (error) {},
     );
   }
 
@@ -64,7 +58,6 @@ class SensorService {
     _compassController = null;
   }
 
-  // Calcula a magnitude da aceleração
   double calculateAccelerationMagnitude(AccelerometerEvent event) {
     return sqrt(
       event.x * event.x + 
@@ -73,7 +66,6 @@ class SensorService {
     );
   }
 
-  // Converte graus da bússola para direção cardinal
   String getCardinalDirection(double heading) {
     if (heading >= 337.5 || heading < 22.5) return 'N';
     if (heading >= 22.5 && heading < 67.5) return 'NE';
@@ -86,7 +78,6 @@ class SensorService {
     return 'N';
   }
 
-  // Detecta movimento baseado na aceleração
   bool detectMovement(AccelerometerEvent event, {double threshold = 12.0}) {
     final magnitude = calculateAccelerationMagnitude(event);
     return magnitude > threshold;

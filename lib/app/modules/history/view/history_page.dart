@@ -16,14 +16,10 @@ class HistoryPage extends StatelessWidget {
           title: const Text('Histórico de Sessões'),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           actions: [
-            Consumer<HistoryViewModel>(
-              builder: (context, viewModel, child) {
-                return IconButton(
-                  onPressed: viewModel.refreshSessions,
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Atualizar',
-                );
-              },
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Atualizar',
             ),
           ],
         ),
@@ -53,7 +49,7 @@ class HistoryPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: viewModel.refreshSessions,
+                      onPressed: () {},
                       child: const Text('Tentar Novamente'),
                     ),
                   ],
@@ -84,7 +80,7 @@ class HistoryPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
-                      onPressed: viewModel.navigateToNewSession,
+                      onPressed: () {},
                       icon: const Icon(Icons.add),
                       label: const Text('Nova Sessão'),
                     ),
@@ -94,7 +90,7 @@ class HistoryPage extends StatelessWidget {
             }
 
             return RefreshIndicator(
-              onRefresh: viewModel.refreshSessions,
+              onRefresh: () async {},
               child: ListView.builder(
                 padding: const EdgeInsets.all(16.0),
                 itemCount: viewModel.sessions.length,
@@ -128,7 +124,6 @@ class HistoryPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              viewModel.deleteSession(session.id!);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,

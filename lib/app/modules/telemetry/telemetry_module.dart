@@ -10,9 +10,7 @@ class TelemetryModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    print('🟡 TELEMETRY_MODULE: Configurando rotas do TelemetryModule');
     r.child('/', child: (context) {
-      print('🟢 TELEMETRY_MODULE: Criando TelemetryPage');
       return const TelemetryPage();
     });
   }

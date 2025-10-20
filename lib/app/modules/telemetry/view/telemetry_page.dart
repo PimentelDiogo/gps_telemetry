@@ -65,13 +65,10 @@ class TelemetryPage extends StatelessWidget {
 
             return Column(
               children: [
-                // Mapa na parte superior
                 Expanded(
                   flex: 3,
                   child: _MapSection(viewModel: viewModel),
                 ),
-                
-                // Dados de telemetria na parte inferior
                 Expanded(
                   flex: 2,
                   child: SingleChildScrollView(
@@ -79,11 +76,8 @@ class TelemetryPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Status da sessão
                         _StatusCard(viewModel: viewModel),
                         const SizedBox(height: 16),
-                        
-                        // Dados em tempo real
                         Row(
                           children: [
                             Expanded(child: _SpeedCard(viewModel: viewModel)),
@@ -92,12 +86,8 @@ class TelemetryPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        
-                        // Estatísticas da sessão
                         _StatisticsCard(viewModel: viewModel),
                         const SizedBox(height: 16),
-                        
-                        // Action Card para navegar ao histórico
                         Row(
                           children: [
                             Expanded(
@@ -105,15 +95,7 @@ class TelemetryPage extends StatelessWidget {
                                 icon: Icons.history,
                                 title: 'Histórico',
                                 color: Colors.orange,
-                                onTap: () {
-                                  print('🔵 NAVEGAÇÃO: Tentando navegar para /history');
-                                  try {
-                                    Modular.to.pushNamed('/history');
-                                    print('🟢 NAVEGAÇÃO: pushNamed executado com sucesso');
-                                  } catch (e) {
-                                    print('🔴 NAVEGAÇÃO: Erro ao navegar - $e');
-                                  }
-                                },
+                                onTap: () => Modular.to.pushNamed('/history'),
                               ),
                             ),
                           ],
@@ -224,8 +206,6 @@ class _StatusCard extends StatelessWidget {
   }
 }
 
-
-
 class _SpeedCard extends StatelessWidget {
   final TelemetryViewModel viewModel;
 
@@ -249,7 +229,6 @@ class _SpeedCard extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  // Otimização: Usar Selector para atualizar apenas quando a velocidade mudar
                   Selector<TelemetryViewModel, double>(
                     selector: (context, viewModel) => viewModel.currentSpeed,
                     builder: (context, currentSpeed, child) {
@@ -303,7 +282,6 @@ class _SensorCard extends StatelessWidget {
                  Expanded(
                    child: Column(
                      children: [
-                       // Otimização: Usar Consumer para atualizar apenas quando necessário
                         Consumer<TelemetryViewModel>(
                           builder: (context, viewModel, child) {
                             return Text(
@@ -327,7 +305,6 @@ class _SensorCard extends StatelessWidget {
                  Expanded(
                    child: Column(
                      children: [
-                       // Otimização: Usar Consumer para atualizar apenas quando necessário
                         Consumer<TelemetryViewModel>(
                           builder: (context, viewModel, child) {
                             return Text(
@@ -377,7 +354,6 @@ class _StatisticsCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            // Otimização: Usar Selector para atualizar apenas quando a distância mudar
             Selector<TelemetryViewModel, double>(
               selector: (context, viewModel) => viewModel.totalDistance,
               builder: (context, totalDistance, child) {
@@ -388,7 +364,6 @@ class _StatisticsCard extends StatelessWidget {
                 );
               },
             ),
-            // Otimização: Usar Selector para atualizar apenas quando a velocidade máxima mudar
             Selector<TelemetryViewModel, double>(
               selector: (context, viewModel) => viewModel.maxSpeed,
               builder: (context, maxSpeed, child) {
@@ -399,7 +374,6 @@ class _StatisticsCard extends StatelessWidget {
                 );
               },
             ),
-            // Otimização: Usar Selector para atualizar apenas quando a velocidade média mudar
             Selector<TelemetryViewModel, double>(
               selector: (context, viewModel) => viewModel.avgSpeed,
               builder: (context, avgSpeed, child) {
@@ -410,7 +384,6 @@ class _StatisticsCard extends StatelessWidget {
                 );
               },
             ),
-            // Otimização: Usar Selector para atualizar apenas quando o número de pontos mudar
             Selector<TelemetryViewModel, int>(
               selector: (context, viewModel) => viewModel.pointCount,
               builder: (context, pointCount, child) {
@@ -450,7 +423,6 @@ class _MapSectionState extends State<_MapSection> {
 
   void _setInitialPosition() async {
     try {
-      // Obter localização atual do dispositivo
       final locationService = Modular.get<LocationService>();
       final position = await locationService.getCurrentPosition();
       
@@ -460,14 +432,12 @@ class _MapSectionState extends State<_MapSection> {
           _isLoadingLocation = false;
         });
         
-        // Se o mapa já foi criado, mover a câmera para a posição atual
         if (_mapController != null) {
           _mapController!.animateCamera(
             CameraUpdate.newLatLng(_initialPosition!),
           );
         }
       } else {
-        // Fallback para posição padrão (São Paulo) se não conseguir obter localização
         if (mounted) {
           setState(() {
             _initialPosition = const LatLng(-23.5505, -46.6333);
@@ -476,7 +446,6 @@ class _MapSectionState extends State<_MapSection> {
         }
       }
     } catch (e) {
-      // Em caso de erro, usar posição padrão
       if (mounted) {
         setState(() {
           _initialPosition = const LatLng(-23.5505, -46.6333);
@@ -515,10 +484,8 @@ class _MapSectionState extends State<_MapSection> {
               GoogleMap(
               onMapCreated: (GoogleMapController controller) {
                 _mapController = controller;
-                // Delay para evitar operações simultâneas que podem causar buffer overflow
                 Future.delayed(const Duration(milliseconds: 400), () {
                   if (mounted && _mapController != null) {
-                    // Mapa pronto para operações
                   }
                 });
               },
@@ -543,8 +510,6 @@ class _MapSectionState extends State<_MapSection> {
               mapToolbarEnabled: false,
               minMaxZoomPreference: const MinMaxZoomPreference(10.0, 20.0),
             ),
-            
-            // Botão para centralizar na localização atual
             Positioned(
               top: 16,
               right: 16,
@@ -558,8 +523,6 @@ class _MapSectionState extends State<_MapSection> {
                 ),
               ),
             ),
-            
-            // Indicador de status de gravação
             if (widget.viewModel.isRecording)
               Positioned(
                 top: 16,

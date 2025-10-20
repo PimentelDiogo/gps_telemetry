@@ -10,9 +10,7 @@ class HistoryModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    print('🟡 HISTORY_MODULE: Configurando rotas do HistoryModule');
     r.child('/', child: (context) {
-      print('🟢 HISTORY_MODULE: Criando HistoryPage');
       return const HistoryPage();
     });
   }

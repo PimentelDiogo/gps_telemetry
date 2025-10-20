@@ -7,29 +7,24 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gps_telemetry/app/shared/repositories/telemetry_repository.dart';
 import 'package:gps_telemetry/app/shared/database/database_service.dart';
 import 'package:gps_telemetry/app/shared/models/telemetry_data.dart';
-import 'dart:developer' as dev;
 
 class TelemetryViewModel extends ChangeNotifier {
   final TelemetryRepository _telemetryRepository = Modular.get<TelemetryRepository>();
   final DatabaseService _databaseService = Modular.get<DatabaseService>();
 
-  // Estado da sessão
   int? _currentSessionId;
   bool _isRecording = false;
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Stream de dados consolidados
   StreamSubscription<TelemetryData>? _telemetrySubscription;
   
-  // Estado da UI
   TelemetryData? _currentTelemetryData;
   Marker? _mapMarker;
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
   List<LatLng> _routePoints = [];
   
-  // Estatísticas da sessão
   double _totalDistance = 0.0;
   double _maxSpeed = 0.0;
   double _avgSpeed = 0.0;
@@ -37,10 +32,9 @@ class TelemetryViewModel extends ChangeNotifier {
   DateTime? _sessionStartTime;
   Position? _lastPosition;
 
-  // Getters
   int? get currentSessionId => _currentSessionId;
   bool get isRecording => _isRecording;
-  bool get isCollecting => _isRecording; // Alias para isRecording
+  bool get isCollecting => _isRecording;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Position? get currentPosition => _telemetryRepository.currentPosition;
@@ -57,7 +51,6 @@ class TelemetryViewModel extends ChangeNotifier {
   int get pointCount => _pointCount;
   DateTime? get sessionStartTime => _sessionStartTime;
 
-  // Propriedades calculadas
   double get currentSpeed => _telemetryRepository.currentSpeed;
 
   Duration get sessionDuration => _sessionStartTime != null 
@@ -65,19 +58,16 @@ class TelemetryViewModel extends ChangeNotifier {
       : Duration.zero;
 
   TelemetryViewModel({int? sessionId}) {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Inicializando TelemetryViewModel - sessionId: $sessionId 🟡");
     if (sessionId != null) {
       _loadSession(sessionId);
     }
   }
 
   Future<void> _loadSession(int sessionId) async {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Carregando sessão ID: $sessionId 🟡");
     _setLoading(true);
     try {
       final session = await _databaseService.getSession(sessionId);
       if (session != null) {
-        dev.log("🟢 TELEMETRY_VIEWMODEL: Sessão encontrada - Nome: ${session['name']}, Distância: ${session['total_distance']} 🟢");
         _currentSessionId = sessionId;
         _totalDistance = session['total_distance']?.toDouble() ?? 0.0;
         _maxSpeed = session['max_speed']?.toDouble() ?? 0.0;
@@ -85,25 +75,19 @@ class TelemetryViewModel extends ChangeNotifier {
         
         final points = await _databaseService.getSessionPoints(sessionId);
         _pointCount = points.length;
-        dev.log("🟡 TELEMETRY_VIEWMODEL: Pontos carregados: ${_pointCount} 🟡");
         
         if (session['start_time'] != null) {
           _sessionStartTime = DateTime.fromMillisecondsSinceEpoch(session['start_time']);
-          dev.log("🟡 TELEMETRY_VIEWMODEL: Hora de início: $_sessionStartTime 🟡");
         }
         
-        // Se a sessão não tem end_time, ela ainda está ativa
         if (session['end_time'] == null) {
-          dev.log("🟡 TELEMETRY_VIEWMODEL: Sessão ainda ativa, retomando gravação 🟡");
           _isRecording = true;
           await _startTracking();
         }
       } else {
-        dev.log("🔴 TELEMETRY_VIEWMODEL: Sessão não encontrada para ID: $sessionId 🔴");
         _errorMessage = 'Sessão não encontrada';
       }
     } catch (e) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao carregar sessão: $e 🔴");
       _errorMessage = 'Erro ao carregar sessão: $e';
     } finally {
       _setLoading(false);
@@ -112,17 +96,14 @@ class TelemetryViewModel extends ChangeNotifier {
 
   Future<void> startNewSession(String sessionName) async {
     if (_isRecording) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Tentativa de iniciar nova sessão enquanto já está gravando 🔴");
       return;
     }
 
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Iniciando nova sessão: '$sessionName' 🟡");
     try {
       _setLoading(true);
-      _errorMessage = null; // Limpar erros anteriores
+      _errorMessage = null;
       
       _currentSessionId = await _telemetryRepository.createSession(sessionName);
-      dev.log("🟢 TELEMETRY_VIEWMODEL: Sessão criada com ID: $_currentSessionId 🟢");
       
       _sessionStartTime = DateTime.now();
       _resetStatistics();
@@ -130,9 +111,7 @@ class TelemetryViewModel extends ChangeNotifier {
       await _startTracking();
       _isRecording = true;
       
-      dev.log("🟢 TELEMETRY_VIEWMODEL: Nova sessão iniciada com sucesso! 🟢");
     } catch (e) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao iniciar sessão: $e 🔴");
       _errorMessage = 'Erro ao iniciar sessão: $e';
       _isRecording = false;
       _currentSessionId = null;
@@ -143,18 +122,14 @@ class TelemetryViewModel extends ChangeNotifier {
 
   Future<void> stopSession() async {
     if (!_isRecording || _currentSessionId == null) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Tentativa de parar sessão que não está ativa 🔴");
       return;
     }
 
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Parando sessão ID: $_currentSessionId 🟡");
     try {
       _setLoading(true);
       _stopTracking();
       
-      // Finalizar sessão no repository (que calcula estatísticas automaticamente)
       await _telemetryRepository.endSession(_currentSessionId!);
-      dev.log("🟢 TELEMETRY_VIEWMODEL: Sessão finalizada com sucesso - Distância total: ${_totalDistance}m, Pontos: $_pointCount 🟢");
       
       _isRecording = false;
       _currentSessionId = null;
@@ -162,7 +137,6 @@ class TelemetryViewModel extends ChangeNotifier {
       _resetStatistics();
       clearRoute();
     } catch (e) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao parar sessão: $e 🔴");
       _errorMessage = 'Erro ao parar sessão: $e';
     } finally {
       _setLoading(false);
@@ -170,51 +144,36 @@ class TelemetryViewModel extends ChangeNotifier {
   }
 
   Future<void> _startTracking() async {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Iniciando rastreamento de dados 🟡");
     try {
-      // Iniciar coleta de dados usando o repository
       await _telemetryRepository.startDataCollection();
-      dev.log("🟢 TELEMETRY_VIEWMODEL: Coleta de dados iniciada no repository 🟢");
       
-      // Subscrever ao stream consolidado de telemetria
       _telemetrySubscription = _telemetryRepository.telemetryStream.listen(
         _onTelemetryUpdate,
         onError: (error) {
-          dev.log("🔴 TELEMETRY_VIEWMODEL: Erro no stream de telemetria: $error 🔴");
           _errorMessage = 'Erro na coleta de dados: $error';
           notifyListeners();
         },
       );
-      dev.log("🟢 TELEMETRY_VIEWMODEL: Subscription ao stream de telemetria criada 🟢");
     } catch (e) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao iniciar rastreamento: $e 🔴");
       _errorMessage = 'Erro ao iniciar rastreamento: $e';
       notifyListeners();
     }
   }
 
   void _stopTracking() {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Parando rastreamento de dados 🟡");
     _telemetryRepository.stopDataCollection();
     _telemetrySubscription?.cancel();
     _telemetrySubscription = null;
-    dev.log("🟢 TELEMETRY_VIEWMODEL: Rastreamento parado com sucesso 🟢");
   }
 
-  // Otimização: Controle de frequência de atualizações
   DateTime? _lastUIUpdate;
-  static const Duration _uiUpdateInterval = Duration(milliseconds: 100); // Atualizar UI a cada 100ms
+  static const Duration _uiUpdateInterval = Duration(milliseconds: 100);
 
   void _onTelemetryUpdate(TelemetryData telemetryData) {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Dados de telemetria recebidos - Lat: ${telemetryData.latitude}, Lng: ${telemetryData.longitude}, Velocidade: ${telemetryData.speed}km/h 🟡");
-    
-    // Atualizar dados atuais da telemetria
     _currentTelemetryData = telemetryData;
     
-    // Atualizar marcador do mapa
     _updateMapMarker(telemetryData);
     
-    // Adicionar ponto à rota
     _addRoutePoint(telemetryData);
     
     if (_isRecording && _currentSessionId != null) {
@@ -222,7 +181,6 @@ class TelemetryViewModel extends ChangeNotifier {
       _saveTelemetryPoint(telemetryData);
     }
     
-    // Otimização: Limitar frequência de atualizações da UI
     final now = DateTime.now();
     if (_lastUIUpdate == null || now.difference(_lastUIUpdate!) >= _uiUpdateInterval) {
       _lastUIUpdate = now;
@@ -247,39 +205,31 @@ class TelemetryViewModel extends ChangeNotifier {
     if (_lastPosition != null) {
       final distance = _telemetryRepository.calculateDistance(_lastPosition!, currentPosition);
       _totalDistance += distance;
-      dev.log("🟡 TELEMETRY_VIEWMODEL: Distância adicionada: ${distance.toStringAsFixed(2)}m, Total: ${_totalDistance.toStringAsFixed(2)}m 🟡");
     }
 
     final speed = telemetryData.speed ?? 0;
     if (speed > _maxSpeed) {
       _maxSpeed = speed;
-      dev.log("🟡 TELEMETRY_VIEWMODEL: Nova velocidade máxima: ${_maxSpeed.toStringAsFixed(1)}km/h 🟡");
     }
 
     _pointCount++;
     _avgSpeed = _pointCount > 0 ? (_avgSpeed * (_pointCount - 1) + speed) / _pointCount : speed;
     _lastPosition = currentPosition;
-    
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Estatísticas atualizadas - Pontos: $_pointCount, Vel. Média: ${_avgSpeed.toStringAsFixed(1)}km/h 🟡");
   }
 
   Future<void> _saveTelemetryPoint(TelemetryData telemetryData) async {
     if (_currentSessionId == null) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Tentativa de salvar ponto sem sessão ativa 🔴");
       return;
     }
 
     try {
       await _telemetryRepository.saveTelemetryPoint(_currentSessionId!);
-      dev.log("🟢 TELEMETRY_VIEWMODEL: Ponto de telemetria salvo com sucesso 🟢");
     } catch (e) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao salvar ponto de telemetria: $e 🔴");
       _errorMessage = 'Erro ao salvar dados: $e';
     }
   }
 
   void _resetStatistics() {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Resetando estatísticas da sessão 🟡");
     _totalDistance = 0.0;
     _maxSpeed = 0.0;
     _avgSpeed = 0.0;
@@ -288,7 +238,6 @@ class TelemetryViewModel extends ChangeNotifier {
   }
 
   void _setLoading(bool loading) {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Alterando estado de loading para: $loading 🟡");
     _isLoading = loading;
     notifyListeners();
   }
@@ -335,7 +284,6 @@ class TelemetryViewModel extends ChangeNotifier {
     );
     
     _markers = {_mapMarker!};
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Marcador do mapa atualizado para posição: ${position.latitude}, ${position.longitude} 🟡");
   }
 
   void _addRoutePoint(TelemetryData telemetryData) {
@@ -351,12 +299,10 @@ class TelemetryViewModel extends ChangeNotifier {
           width: 3,
         ),
       };
-      dev.log("🟡 TELEMETRY_VIEWMODEL: Rota atualizada com ${_routePoints.length} pontos 🟡");
     }
   }
 
   void clearRoute() {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Limpando rota e marcadores 🟡");
     _routePoints.clear();
     _polylines.clear();
     _markers.clear();
@@ -364,7 +310,6 @@ class TelemetryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Gera um nome automático para a sessão seguindo o padrão "rotaX"
   Future<String> _generateSessionName() async {
     final sessions = await _databaseService.getAllSessions();
     final existingNames = sessions.map((s) => s['name'] as String).toList();
@@ -376,23 +321,18 @@ class TelemetryViewModel extends ChangeNotifier {
       }
     }
     
-    // Fallback se todos os números de 1-999 estiverem ocupados
     return 'rota${DateTime.now().millisecondsSinceEpoch}';
   }
 
-  /// Inicia uma nova sessão automaticamente com nome gerado
   Future<void> startSessionAutomatically() async {
     if (_isRecording) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Tentativa de iniciar nova sessão enquanto já está gravando 🔴");
       return;
     }
 
     try {
       final sessionName = await _generateSessionName();
-      dev.log("🟡 TELEMETRY_VIEWMODEL: Iniciando sessão automática: '$sessionName' 🟡");
       await startNewSession(sessionName);
     } catch (e) {
-      dev.log("🔴 TELEMETRY_VIEWMODEL: Erro ao iniciar sessão automática: $e 🔴");
       _errorMessage = 'Erro ao iniciar sessão: $e';
       notifyListeners();
     }
@@ -400,9 +340,7 @@ class TelemetryViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    dev.log("🟡 TELEMETRY_VIEWMODEL: Fazendo dispose do TelemetryViewModel 🟡");
     _stopTracking();
     super.dispose();
-    dev.log("🟢 TELEMETRY_VIEWMODEL: Dispose concluído 🟢");
   }
 }

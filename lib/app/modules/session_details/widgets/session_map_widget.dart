@@ -32,7 +32,6 @@ class _SessionMapWidgetState extends State<SessionMapWidget> {
   void _setupMapData() {
     if (widget.telemetryPoints.isEmpty) return;
 
-    // Create markers for start and end points
     _markers = {
       Marker(
         markerId: const MarkerId('start'),
@@ -61,7 +60,6 @@ class _SessionMapWidgetState extends State<SessionMapWidget> {
         ),
     };
 
-    // Create polyline for the route
     if (widget.telemetryPoints.length > 1) {
       _polylines = {
         Polyline(
@@ -81,7 +79,6 @@ class _SessionMapWidgetState extends State<SessionMapWidget> {
     _mapController = controller;
     _isMapReady = true;
     
-    // Delay para evitar operações simultâneas que podem causar buffer overflow
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted && _isMapReady) {
         _fitMapToRoute();
@@ -93,7 +90,6 @@ class _SessionMapWidgetState extends State<SessionMapWidget> {
     if (widget.telemetryPoints.isEmpty || _mapController == null || !_isMapReady || !mounted) return;
 
     if (widget.telemetryPoints.length == 1) {
-      // Single point - just center on it
       _mapController!.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(
@@ -106,7 +102,6 @@ class _SessionMapWidgetState extends State<SessionMapWidget> {
       return;
     }
 
-    // Multiple points - fit to bounds
     double minLat = widget.telemetryPoints.first.latitude;
     double maxLat = widget.telemetryPoints.first.latitude;
     double minLng = widget.telemetryPoints.first.longitude;
@@ -125,7 +120,7 @@ class _SessionMapWidgetState extends State<SessionMapWidget> {
           southwest: LatLng(minLat, minLng),
           northeast: LatLng(maxLat, maxLng),
         ),
-        100.0, // padding
+        100.0,
       ),
     );
   }

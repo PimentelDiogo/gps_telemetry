@@ -64,7 +64,6 @@ class DatabaseService {
     ''');
   }
 
-  // Sessões de telemetria
   Future<int> createSession(String name) async {
     final db = await database;
     return await db.insert('telemetry_sessions', {
@@ -111,7 +110,6 @@ class DatabaseService {
     return results.isNotEmpty ? results.first : null;
   }
 
-  // Pontos de telemetria
   Future<int> insertTelemetryPoint(TelemetryData data) async {
     final db = await database;
     return await db.insert('telemetry_points', data.toMap());
@@ -147,7 +145,6 @@ class DatabaseService {
     return results.map((map) => TelemetryData.fromMap(map)).toList();
   }
 
-  // Estatísticas
   Future<Map<String, dynamic>> getSessionStatistics(int sessionId) async {
     final db = await database;
     final result = await db.rawQuery('''
@@ -164,7 +161,6 @@ class DatabaseService {
     return result.isNotEmpty ? result.first : {};
   }
 
-  // Limpeza
   Future<void> deleteSession(int sessionId) async {
     final db = await database;
     await db.delete(

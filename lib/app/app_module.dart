@@ -10,12 +10,10 @@ import 'package:gps_telemetry/app/shared/repositories/telemetry_repository.dart'
 class AppModule extends Module {
   @override
   void binds(Injector i) {
-    // Serviços compartilhados
     i.addSingleton<LocationService>(() => LocationService());
     i.addSingleton<SensorService>(() => SensorService());
     i.addSingleton<DatabaseService>(() => DatabaseService());
     
-    // Repository que consolida dados dos serviços
     i.addSingleton<TelemetryRepository>(() => TelemetryRepository(
       locationService: i.get<LocationService>(),
       sensorService: i.get<SensorService>(),
@@ -25,13 +23,10 @@ class AppModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    // Rota inicial - agora é a telemetria
     r.module('/', module: TelemetryModule());
     
-    // Módulo de histórico
     r.module('/history', module: HistoryModule());
     
-    // Módulo de detalhes da sessão
     r.module('/session-details', module: SessionDetailsModule());
   }
 }

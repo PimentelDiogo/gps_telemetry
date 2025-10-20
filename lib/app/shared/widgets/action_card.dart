@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Widget reutilizável para cards de ação com design consistente
-/// 
-/// Suporta:
-/// - Estado ativo/inativo com feedback visual
-/// - Subtítulo opcional
-/// - Customização de cores e ícones
-/// - Acessibilidade
 class ActionCard extends StatelessWidget {
   final IconData icon;
   final String title;

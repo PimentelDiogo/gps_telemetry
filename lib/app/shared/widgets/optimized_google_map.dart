@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-/// Widget otimizado para GoogleMap que gerencia melhor os recursos
-/// e evita o erro "Unable to acquire a buffer item"
 class OptimizedGoogleMap extends StatefulWidget {
   final CameraPosition initialCameraPosition;
   final Set<Marker> markers;
@@ -49,11 +47,9 @@ class _OptimizedGoogleMapState extends State<OptimizedGoogleMap> {
   @override
   void initState() {
     super.initState();
-    // Pequeno delay para evitar conflitos de inicialização
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted && !_isDisposed) {
         setState(() {
-          // Força rebuild após delay inicial
         });
       }
     });
@@ -64,7 +60,6 @@ class _OptimizedGoogleMapState extends State<OptimizedGoogleMap> {
     
     _mapController = controller;
     
-    // Delay para evitar operações simultâneas que podem causar buffer overflow
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted && !_isDisposed && _mapController != null) {
         _isMapReady = true;
@@ -94,10 +89,9 @@ class _OptimizedGoogleMapState extends State<OptimizedGoogleMap> {
       trafficEnabled: widget.trafficEnabled,
       mapToolbarEnabled: widget.mapToolbarEnabled,
       onTap: widget.onTap != null ? _onTap : null,
-      // Configurações otimizadas para reduzir uso de buffer
-      liteModeEnabled: false, // Desabilitado para melhor performance
-      buildingsEnabled: false, // Reduz uso de recursos gráficos
-      indoorViewEnabled: false, // Reduz uso de recursos gráficos
+      liteModeEnabled: false,
+      buildingsEnabled: false,
+      indoorViewEnabled: false,
     );
 
     if (widget.height != null || widget.borderRadius != null) {
@@ -132,7 +126,6 @@ class _OptimizedGoogleMapState extends State<OptimizedGoogleMap> {
     _isDisposed = true;
     _isMapReady = false;
     
-    // Delay para garantir que operações pendentes sejam concluídas
     Future.delayed(const Duration(milliseconds: 100), () {
       _mapController?.dispose();
       _mapController = null;

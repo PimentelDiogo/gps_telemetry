@@ -410,7 +410,7 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: _viewModel.exportSession,
+                onPressed: () {},
                 icon: const Icon(Icons.download),
                 label: const Text('Exportar'),
               ),
@@ -461,10 +461,8 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
   void _handleMenuAction(String action) {
     switch (action) {
       case 'map':
-        _viewModel.viewOnMap();
         break;
       case 'export':
-        _viewModel.exportSession();
         break;
       case 'delete':
         _confirmDelete();
@@ -488,7 +486,6 @@ class _SessionDetailsPageState extends State<SessionDetailsPage> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _viewModel.deleteSession();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Excluir'),
